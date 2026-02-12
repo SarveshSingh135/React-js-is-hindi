@@ -1,0 +1,213 @@
+🔷 Introduction – React Fiber kya hai?
+React Fiber React ke core algorithm ka naya version (reimplementation) hai.
+Is par React team ne 2+ saal research ki hai.
+
+Fiber ka main goal
+React ko in cheezon ke liye zyada suitable banana:
+1. 🎞️ Animation
+2.📐 Layout
+3.✋ Gestures (scroll, drag, swipe)
+
+Sabse badi feature
+👉 Incremental Rendering
+
+Matlab:
+ 1.Rendering ka kaam chhote parts (chunks) me todna
+ 2.Unhe multiple frames me complete karna
+
+Isse:
+1.UI smooth rehta hai
+2.Frame drop nahi hota
+
+🔷 React Fiber ke extra features
+React Fiber ye sab kar sakta hai:
+1.⏸️ Kaam pause karna
+2.❌ Be-kaar kaam abort karna
+3.♻️ Purana kaam reuse karna
+4.🚦 Alag-alag updates ko priority dena
+5.⚡ Concurrency (ek saath multiple kaam smartly)
+
+🔷 About this document (ye document kis liye hai?)
+ 1. Ye official React document nahi hai
+ 2. Author React team ka member nahi hai
+ 3. Ye notes React Fiber ka code follow karte hue likhe gaye
+ 4. Goal: Fiber ko simple language me samjhana
+
+👉 Ye document work-in-progress hai
+👉 Aage changes ho sakte hain
+
+🔷 Prerequisites (pehle kya aana chahiye?)
+Fiber samajhne se pehle ye concepts aane chahiye:
+1. React Components, Elements, Instances
+2. Reconciliation
+3. React ke basic theoretical concepts
+4. React Design Principles (especially scheduling)
+
+Agar pehli baar me sab clear na ho:
+👉 normal hai, time ke saath samajh aata hai 🙂
+
+🔷 Reconciliation kya hota hai?
+reconciliation
+👉 React ka algorithm jo old tree aur new tree ko compare karta hai
+
+update
+👉 Data change (usually setState) jo re-render trigger karta hai
+
+Important idea
+React developer ko lagta hai:
+  “poora app dubara render ho raha hai”
+
+But reality me:
+1. React sirf required parts update karta hai
+2. Ye kaam reconciliation ke through hota hai
+
+Virtual DOM (simple)
+React memory me ek tree banata hai
+Us tree ko DOM / Native UI me convert karta hai
+Update aata hai → naya tree banta hai
+Dono trees ka diff hota hai
+Sirf difference UI me apply hota hai
+
+Reconciliation ke rules
+1. Alag component types → pura subtree replace
+2. List diff → keys ke basis par
+
+🔷 Reconciliation vs Rendering
+Reconciler → kya change hua ye decide karta hai
+Renderer → UI update karta hai (DOM / Native)
+
+Isliye:
+ .React DOM
+ .React Native
+
+👉 Same reconciler share karte hain
+⚠️ Fiber sirf reconciler ko rewrite karta hai, rendering ko nahi
+
+🔷 Scheduling kya hota hai?
+scheduling
+👉 Kaam kab karna hai, ye decide karna
+work
+👉 Computation jo update ki wajah se hota hai
+
+React ka philosophy
+React push model follow nahi karta
+React pull model follow karta hai
+
+Matlab:
+1. Har update turant apply zaroori nahi
+2. React khud decide kare:
+  a. kaunsa kaam important hai
+  b. kaunsa delay ho sakta hai
+
+UI me priority ka example
+ 1. Button click animation → high priority
+ 2. Background data render → low priority
+
+⚠️ Old React problem:
+ 1. Update aaya
+ 2. Pura subtree turant render
+ 3. Scheduling ka fayda nahi
+👉 Isi problem ko solve karne ke liye Fiber aaya
+
+🔷 What is a Fiber?
+Ab hum Fiber ke core me aa gaye hain ❤️
+👉 Fiber = unit of work
+React ka har chhota kaam ek fiber hota hai.
+
+React ko function ki tarah socho
+ v = f(d)  // code
+.f → component
+.d → props/state
+.v → UI
+Rendering = functions ke andar functions call hona
+
+🔷 Problem with call stack
+Normal call stack:
+1.Ek baar kaam start
+2.Tab tak chalta rehta hai jab tak khatam na ho
+
+UI me problem:
+1. Zyada kaam = animation lag
+2. Beech me new update aa jaye = purana kaam waste
+
+🔷 Browser APIs (solution ka aadha hissa)
+1. requestAnimationFrame → high priority
+2. requestIdleCallback → low priority
+
+❌ Problem:
+  a. Ye tab kaam kare jab kaam tod sakte ho
+Normal call stack:
+👉 kaam todne nahi deta
+
+🔷 React Fiber ka real kaam 🔥
+👉 React apna custom call stack banata hai
+ 1.Is stack ko kehte hain Fiber
+ 2.Har fiber = virtual stack frame
+
+Isse React:
+ 1.kaam pause kar sakta hai
+ 2.resume kar sakta hai
+ 3.cancel kar sakta hai
+ 4.priority set kar sakta hai
+
+🔷 Fiber ka structure (andar kya hota hai)
+Technically:
+👉 Fiber = JavaScript object
+Isme component ki:
+ a. info
+ b. input
+ c. output
+sab hota hai
+
+🔹 Important Fiber fields
+1️⃣ type & key
+1. type → kaunsa component
+a. function/class
+b. ya "div", "span"
+2. key → reconciliation ke liye
+
+2️⃣ child & sibling
+Fiber tree banata hai 🌳
+Parent → Child1 → Child2
+ a. child → pehla child
+ b. sibling → next child
+
+3️⃣ return
+1. Parent fiber ka reference
+2. Call stack ke return address jaisa
+
+4️⃣ pendingProps & memoizedProps
+1. pendingProps → naye props
+2. memoizedProps → purane props
+Agar dono same:
+👉 React kaam skip karta hai (performance boost)
+
+5️⃣ pendingWorkPriority
+1. Number jo priority batata hai
+2. Chhota number = zyada priority
+Scheduler isi se decide karta hai:
+👉 next kaunsa fiber run kare
+
+6️⃣ alternate (double buffering)
+Har component ke max 2 fibers:
+1.current (screen par)
+2.work-in-progress (ban raha)
+3.Dono ek-dusre ke alternate
+4.Memory optimize hoti hai
+
+7️⃣ output
+1 Leaf nodes (div, span) output banate hain
+2 Output upar pass hota hai
+3 Renderer UI update karta hai
+
+🔷 Future sections me kya aayega?
+1 Scheduler next work kaise choose karta hai
+2 Priority kaise flow hoti hai
+3 Pause / resume ka logic
+4 Work flush kaise hota hai
+5 Side effects (lifecycle, effects)
+6 Coroutine & advanced features
+
+🧠 Final one-line summary
+React Fiber React ka smart internal engine hai jo rendering ko tod-kar,
+priority ke saath,pause-resume karke UI ko smooth banata hai.
