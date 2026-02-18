@@ -1,0 +1,21 @@
+
+import './App.css'
+import Login from './component/Login'
+import Profile from './component/profile'
+import UserContextProvider from './context/UserContextProvider'
+
+function App() {
+
+  
+
+  return (
+    <UserContextProvider>
+    <h1>Sarvesh With Coading </ h1>
+    <Login />
+    <Profile />
+
+    </UserContextProvider>
+  )
+}
+
+export default App
